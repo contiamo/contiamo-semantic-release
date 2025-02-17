@@ -246,6 +246,31 @@ test("Push tag to remote repository", async (t) => {
   t.is(await gitRemoteTagHead(repositoryUrl, "tag_name", { cwd }), commits[0].hash);
 });
 
+test("Skip pushing tag to remote repository when skipGitPush is true", async (t) => {
+  // Create a git repository with a remote, set the current working directory at the root of the repo
+  const { cwd, repositoryUrl } = await gitRepo(true);
+  const commits = await gitCommits(["Test commit"], { cwd });
+
+  await tag("tag_name", "HEAD", { cwd });
+  await push(repositoryUrl, { cwd }, { skipGitPush: true });
+
+  // Verify tag was not pushed to remote
+  await t.throwsAsync(gitRemoteTagHead(repositoryUrl, "tag_name", { cwd }));
+});
+
+test("Skip pushing notes to remote repository when skipGitPush is true", async (t) => {
+  // Create a git repository with a remote, set the current working directory at the root of the repo
+  const { cwd, repositoryUrl } = await gitRepo(true);
+  const commits = await gitCommits(["Test commit"], { cwd });
+
+  await addNote({ note: "test note" }, commits[0].hash, { cwd });
+  await pushNotes(repositoryUrl, commits[0].hash, { cwd }, { skipGitPush: true });
+
+  // Verify notes were not pushed to remote
+  const temporaryRepo = await gitShallowClone(repositoryUrl);
+  await t.throwsAsync(gitGetNote(commits[0].hash, { cwd: temporaryRepo }));
+});
+
 test("Push tag to remote repository with remote branch ahead", async (t) => {
   const { cwd, repositoryUrl } = await gitRepo(true);
   const commits = await gitCommits(["First"], { cwd });
