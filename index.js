@@ -16,7 +16,8 @@ import { extractErrors, makeTag } from "./lib/utils.js";
 import getGitAuthUrl from "./lib/get-git-auth-url.js";
 import getBranches from "./lib/branches/index.js";
 import getLogger from "./lib/get-logger.js";
-import { addNote, getGitHead, getTagHead, isBranchUpToDate, push, pushNotes, tag, verifyAuth } from "./lib/git.js";
+import { addNote, branchExists, checkout, createBranch, forceUpdateBranch, getGitHead, getTagHead, isBranchUpToDate, push, pushBranch, pushNotes, tag, verifyAuth } from "./lib/git.js";
+import { execa } from "execa";
 import getError from "./lib/get-error.js";
 import { COMMIT_EMAIL, COMMIT_NAME } from "./lib/definitions/constants.js";
 
@@ -72,7 +73,7 @@ async function run(context, plugins) {
     logger.log(
       `This test run was triggered on the branch ${ciBranch}, while semantic-release is configured to only publish from ${context.branches
         .map(({ name }) => name)
-        .join(", ")}, therefore a new version won’t be published.`
+        .join(", ")}, therefore a new version won't be published.`
     );
     return false;
   }
@@ -122,6 +123,9 @@ async function run(context, plugins) {
 
       if (options.dryRun) {
         logger.warn(`Skip ${nextRelease.gitTag} tag creation in dry-run mode`);
+      } else if (options.skipGitPush) {
+        logger.log("Skipping git tag push due to --skip-git-push flag");
+        logger.success(`Ready to add ${nextRelease.channel ? `channel ${nextRelease.channel}` : "default channel"} to tag ${nextRelease.gitTag}`);
       } else {
         await addNote({ channels: [...currentRelease.channels, nextRelease.channel] }, nextRelease.gitTag, {
           cwd,
@@ -197,19 +201,63 @@ async function run(context, plugins) {
 
   await plugins.verifyRelease(context);
 
+  // Generate changelog content while on main branch
   nextRelease.notes = await plugins.generateNotes(context);
 
-  await plugins.prepare(context);
+  const releaseBranchName = `release-please--branches--${ciBranch}`;
+  let exists = false;
+  try {
+    exists = await branchExists(releaseBranchName, { cwd, env });
+  } catch (error) {
+    logger.log(`Error checking branch existence: ${error.message}`);
+  }
 
   if (options.dryRun) {
     logger.warn(`Skip ${nextRelease.gitTag} tag creation in dry-run mode`);
   } else {
-    // Create the tag before calling the publish plugins as some require the tag to exists
-    await tag(nextRelease.gitTag, nextRelease.gitHead, { cwd, env });
-    await addNote({ channels: [nextRelease.channel] }, nextRelease.gitTag, { cwd, env });
-    await push(options.repositoryUrl, { cwd, env }, { skipGitPush: options.skipGitPush });
-    await pushNotes(options.repositoryUrl, nextRelease.gitTag, { cwd, env }, { skipGitPush: options.skipGitPush });
-    logger.success(`Created tag ${nextRelease.gitTag}`);
+    // Store current branch to return to it later
+    const currentBranch = ciBranch;
+
+    // Clean any untracked files
+    await execa("git", ["clean", "-f"], { cwd, env });
+
+    // Handle release branch
+    if (exists) {
+      logger.log(`Release branch ${releaseBranchName} exists, updating to match ${ciBranch}`);
+      await forceUpdateBranch(releaseBranchName, ciBranch, { cwd, env });
+    } else {
+      logger.log(`Creating release branch ${releaseBranchName} from ${ciBranch}`);
+      await createBranch(releaseBranchName, ciBranch, { cwd, env });
+    }
+
+    // Switch to release branch
+    await checkout(releaseBranchName, { cwd, env });
+
+    // Prepare changelog and commit it
+    await plugins.prepare(context);
+    
+    // Commit the changelog
+    await execa("git", ["add", "CHANGELOG.md"], { cwd, env });
+    await execa("git", ["commit", "-m", "chore(main): update changelog for release ${nextRelease.version}"], { cwd, env });
+
+    // Push only to release branch
+    await pushBranch(options.repositoryUrl, `HEAD:${releaseBranchName}`, true, { cwd, env });
+    logger.success(`Updated release branch ${releaseBranchName}`);
+
+    // Switch back to original branch
+    await checkout(currentBranch, { cwd, env });
+
+    if (options.skipGitPush) {
+      logger.log("Skipping git tag push due to --skip-git-push flag");
+      logger.success(`Ready to push tag ${nextRelease.gitTag}`);
+    } else {
+      // Create the tag before calling the publish plugins as some require the tag to exists
+      await tag(nextRelease.gitTag, nextRelease.gitHead, { cwd, env });
+      await addNote({ channels: [nextRelease.channel] }, nextRelease.gitTag, { cwd, env });
+      await push(options.repositoryUrl, { cwd, env }, { skipGitPush: options.skipGitPush });
+      await pushNotes(options.repositoryUrl, nextRelease.gitTag, { cwd, env }, { skipGitPush: options.skipGitPush });
+      logger.success(`Created tag ${nextRelease.gitTag}`);
+    }
   }
 
   const releases = await plugins.publish(context);
@@ -217,9 +265,9 @@ async function run(context, plugins) {
 
   await plugins.success({ ...context, releases });
 
-  logger.success(
-    `Published release ${nextRelease.version} on ${nextRelease.channel ? nextRelease.channel : "default"} channel`
-  );
+  logger.success(options.skipGitPush
+    ? `Ready to push release ${nextRelease.version} on ${nextRelease.channel ? nextRelease.channel : "default"} channel`
+    : `Published release ${nextRelease.version} on ${nextRelease.channel ? nextRelease.channel : "default"} channel`);
 
   if (options.dryRun) {
     logger.log(`Release note for version ${nextRelease.version}:`);
@@ -272,6 +320,9 @@ export default async (cliOptions = {}, { cwd = process.cwd(), env = process.env,
   context.logger.log(`Running ${pkg.name} version ${pkg.version}`);
   try {
     const { plugins, options } = await getConfig(context, cliOptions);
+    if (options.skipGitPush) {
+      context.logger.warn("Git tag push operations will be skipped due to --skip-git-push flag");
+    }
     options.originalRepositoryURL = options.repositoryUrl;
     context.options = options;
     try {
