@@ -12,7 +12,7 @@ import getNextVersion from "./lib/get-next-version.js";
 import getCommits from "./lib/get-commits.js";
 import getLastRelease from "./lib/get-last-release.js";
 import getReleaseToAdd from "./lib/get-release-to-add.js";
-import { extractErrors, makeTag } from "./lib/utils.js";
+import { extractErrors, makeTag, getFilesToCommit } from "./lib/utils.js";
 import getGitAuthUrl from "./lib/get-git-auth-url.js";
 import getBranches from "./lib/branches/index.js";
 import getLogger from "./lib/get-logger.js";
@@ -235,10 +235,15 @@ async function run(context, plugins) {
 
     // Prepare changelog and commit it
     await plugins.prepare(context);
-    
-    // Commit the changelog
-    await execa("git", ["add", "CHANGELOG.md"], { cwd, env });
-    await execa("git", ["commit", "-m", "chore(main): update changelog for release ${nextRelease.version}"], { cwd, env });
+
+    // Commit files configured in plugins
+    const filesToCommit = getFilesToCommit(options.plugins);
+    if (filesToCommit.length > 0) {
+      await execa("git", ["add", ...filesToCommit], { cwd, env });
+      const commitMessage = `chore(main): update files for release ${nextRelease.version}`;
+      await execa("git", ["commit", "-m", commitMessage], { cwd, env });
+      logger.log(`Committed files: ${filesToCommit.join(', ')}`);
+    }
 
     // Push only to release branch
     await pushBranch(options.repositoryUrl, `HEAD:${releaseBranchName}`, true, { cwd, env });
