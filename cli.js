@@ -42,17 +42,12 @@ Usage:
     .option("debug", { describe: "Output debugging information", type: "boolean", group: "Options" })
     .option("d", { alias: "dry-run", describe: "Skip publishing", type: "boolean", group: "Options" })
     .option("h", { alias: "help", group: "Options" })
-    .option("version", { describe: "Show version number", type: "boolean", group: "Options" })
+    .version(pkg.version)
     .strict(false)
     .exitProcess(false);
 
   try {
-    const { help, version, ...options } = cli.parse(process.argv.slice(2));
-
-    if (Boolean(version)) {
-      console.log(pkg.version);
-      return 0;
-    }
+    const { help, ...options } = cli.parse(process.argv.slice(2));
 
     if (Boolean(help)) {
       return 0;
