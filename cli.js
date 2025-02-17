@@ -2,6 +2,10 @@ import util from "node:util";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import hideSensitive from "./lib/hide-sensitive.js";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const pkg = require("./package.json");
 
 const stringList = {
   type: "string",
