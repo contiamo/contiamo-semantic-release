@@ -38,6 +38,7 @@ Usage:
     .option("debug", { describe: "Output debugging information", type: "boolean", group: "Options" })
     .option("d", { alias: "dry-run", describe: "Skip publishing", type: "boolean", group: "Options" })
     .option("h", { alias: "help", group: "Options" })
+    .version('version', 'Show version number', pkg.version)
     .strict(false)
     .exitProcess(false);
 
