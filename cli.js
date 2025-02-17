@@ -44,7 +44,7 @@ Usage:
     .option("h", { alias: "help", group: "Options" })
     .version(pkg.version)
     .strict(false)
-    .exitProcess(false);
+    .exitProcess(true);
 
   try {
     const { help, ...options } = cli.parse(process.argv.slice(2));
