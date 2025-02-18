@@ -41,7 +41,11 @@ async function run(context, plugins) {
   const { isCi, branch, prBranch, isPr } = envCi;
   const ciBranch = isPr ? prBranch : branch;
 
-  if (!isCi && !options.dryRun && !options.noCi) {
+  if (options.getChangelog) {
+    // When getting changelog, run in dry-run mode
+    options.dryRun = true;
+    options.skipGitPush = true;
+  } else if (!isCi && !options.dryRun && !options.noCi) {
     logger.warn("This run was not triggered in a known CI environment, running in dry-run mode.");
     options.dryRun = true;
   } else {
@@ -274,7 +278,13 @@ async function run(context, plugins) {
     ? `Ready to push release ${nextRelease.version} on ${nextRelease.channel ? nextRelease.channel : "default"} channel`
     : `Published release ${nextRelease.version} on ${nextRelease.channel ? nextRelease.channel : "default"} channel`);
 
-  if (options.dryRun) {
+  if (options.getChangelog) {
+    // Output raw markdown changelog and exit
+    if (nextRelease.notes) {
+      context.stdout.write(nextRelease.notes);
+      return pick(context, ["lastRelease", "commits", "nextRelease", "releases"]);
+    }
+  } else if (options.dryRun) {
     logger.log(`Release note for version ${nextRelease.version}:`);
     if (nextRelease.notes) {
       context.stdout.write(await terminalOutput(nextRelease.notes));

@@ -31,6 +31,7 @@ Usage:
     .option("e", { alias: "extends", describe: "Shareable configurations", ...stringList, group: "Options" })
     .option("ci", { describe: "Toggle CI verifications", type: "boolean", group: "Options" })
     .option("skip-git-push", { describe: "Skip pushing tags to git remote", type: "boolean", group: "Options" })
+    .option("get-changelog", { describe: "Output the changelog in markdown format without making any changes", type: "boolean", group: "Options" })
     .option("verify-conditions", { ...stringList, group: "Plugins" })
     .option("analyze-commits", { type: "string", group: "Plugins" })
     .option("verify-release", { ...stringList, group: "Plugins" })
