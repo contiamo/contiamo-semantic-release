@@ -31,7 +31,7 @@ jobs:
       - node/install-packages # Install and automatically cache packages
       # Run optional required steps before releasing
       # - run: npm run build-script
-      - run: npx semantic-release
+      - run: npx contiamo-semantic-release
 
 workflows:
   test_and_release:

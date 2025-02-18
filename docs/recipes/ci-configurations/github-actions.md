@@ -58,8 +58,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: npx contiamo-semantic-release
 ```
+
+## Testing releases without pushing Git tags
+
+You might want to avoid pushing Git tags to your repository. You can use the `--skip-git-push` flag:
+
+```yaml
+      - name: Test Release Process
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx contiamo-semantic-release --skip-git-push
+```
+
+This will run the complete release process, including pushing changelog and other files, but will not push the tags to the remote repository.
 
 ## Pushing `package.json` changes to your repository
 

@@ -135,9 +135,9 @@ In step 4 **semantic-release** will throw an `EINVALIDNEXTVERSION` error to prev
 
 #### Merging into a release branch
 
-When merging commits associated with a release from one release branch to another, **semantic-release** will make the corresponding version available on the channel associated with the target branch.
+When merging commits associated with a release from one release branch to another, **semantic-release** will make the corresponding version available on the channel associated with the target branch. If the `--skip-git-push` flag is used, the Git tags not be pushed to the remote repository.
 
-When merging commits not associated with a release, commits from a [maintenance branch](#maintenance-branches) or commits from a [pre-release branch](#pre-release-branches) **semantic-release** will treat them as [pushed commits](#pushing-to-a-release-branch) and publish a new release if necessary.
+When merging commits not associated with a release, commits from a [maintenance branch](#maintenance-branches) or commits from a [pre-release branch](#pre-release-branches) **semantic-release** will treat them as [pushed commits](#pushing-to-a-release-branch) and publish a new release if necessary. The `--skip-git-push` flag can be used to prevent pushing Git tags to the remote repository.
 
 ### Maintenance branches
 
