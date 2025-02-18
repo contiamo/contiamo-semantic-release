@@ -281,6 +281,7 @@ async function run(context, plugins) {
   if (options.getChangelog) {
     // Output raw markdown changelog and exit
     if (nextRelease.notes) {
+      context.stdout.write("CHANGELOG-in-markdown-below\n");
       context.stdout.write(nextRelease.notes);
       return pick(context, ["lastRelease", "commits", "nextRelease", "releases"]);
     }
