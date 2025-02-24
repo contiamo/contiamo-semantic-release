@@ -41,7 +41,12 @@
 
 This removes the immediate connection between human emotions and version numbers, strictly following the [Semantic Versioning](http://semver.org) specification and communicating the **impact** of changes to consumers.
 
-> Trust us, this will change your workflow for the better. – [egghead.io](https://egghead.io/lessons/javascript-how-to-write-a-javascript-library-automating-releases-with-semantic-release)
+# Releasing New Versions of Contiamno Semantic release
+
+1. make your code changes
+2. Bump the version in `package.json`
+3. Run `npm login`
+4. Run `npm publish`
 
 
 ## Highlights
