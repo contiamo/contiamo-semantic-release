@@ -48,8 +48,22 @@ publish:
   image: node:12
   stage: release
   script:
-    - npx semantic-release
+    - npx contiamo-semantic-release
 ```
+
+## Testing releases without pushing Git tags
+
+You might want to avoid pushing Git tags to your repository. You can use the `--skip-git-push` flag:
+
+```yaml
+publish:
+  image: node:12
+  stage: release
+  script:
+    - npx contiamo-semantic-release --skip-git-push
+```
+
+This will run the complete release process, including pushing changelog and other files, but will not push the tags to the remote repository.
 
 ### `.gitlab-ci.yml` configuration for all projects
 
@@ -67,9 +81,9 @@ release:
   stage: release
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
-    - npm install -g semantic-release @semantic-release/gitlab
+    - npm install -g contiamo-semantic-release @semantic-release/gitlab
   script:
-    - semantic-release
+    - contiamo-semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == "master" # or main
 
@@ -78,9 +92,9 @@ release:
   stage: release
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates
-    - npm install -g semantic-release @semantic-release/gitlab
+    - npm install -g contiamo-semantic-release @semantic-release/gitlab
   script:
-    - semantic-release
+    - contiamo-semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == "master" # or main
 ```
@@ -92,7 +106,7 @@ A `package.json` is required only for [local](../../usage/installation.md#local-
 ```json
 {
   "devDependencies": {
-    "semantic-release": "^15.0.0"
+    "contiamo-semantic-release": "^1.0.0"
   }
 }
 ```

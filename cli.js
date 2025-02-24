@@ -2,6 +2,10 @@ import util from "node:util";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import hideSensitive from "./lib/hide-sensitive.js";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const pkg = require("./package.json");
 
 const stringList = {
   type: "string",
@@ -26,6 +30,8 @@ Usage:
     .option("p", { alias: "plugins", describe: "Plugins", ...stringList, group: "Options" })
     .option("e", { alias: "extends", describe: "Shareable configurations", ...stringList, group: "Options" })
     .option("ci", { describe: "Toggle CI verifications", type: "boolean", group: "Options" })
+    .option("skip-git-push", { describe: "Skip pushing tags to git remote", type: "boolean", group: "Options" })
+    .option("get-changelog", { describe: "Output the changelog in markdown format without making any changes", type: "boolean", group: "Options" })
     .option("verify-conditions", { ...stringList, group: "Plugins" })
     .option("analyze-commits", { type: "string", group: "Plugins" })
     .option("verify-release", { ...stringList, group: "Plugins" })
@@ -37,13 +43,14 @@ Usage:
     .option("debug", { describe: "Output debugging information", type: "boolean", group: "Options" })
     .option("d", { alias: "dry-run", describe: "Skip publishing", type: "boolean", group: "Options" })
     .option("h", { alias: "help", group: "Options" })
+    .version(pkg.version)
     .strict(false)
-    .exitProcess(false);
+    .exitProcess(true);
 
   try {
-    const { help, version, ...options } = cli.parse(process.argv.slice(2));
+    const { help, ...options } = cli.parse(process.argv.slice(2));
 
-    if (Boolean(help) || Boolean(version)) {
+    if (Boolean(help)) {
       return 0;
     }
 

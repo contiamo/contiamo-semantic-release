@@ -26,11 +26,28 @@
   </a>
 </p>
 
+**contiamo-semantic-release** is a fork of the [Semantic Release](https://github.com/contiamo/contiamo-semantic-release) project that includes the following changes:
+- `--skip-git-push` ensures that tags are neither pushed to remote or created locally.
+- The whole flow imitates Google's Release Please action but using pure `git` rather than relying in Github API.
+- When run with `--skip-git-push` the tool will:
+  1. Analyse commits if `@semantic-release/commit-analyzer` is found in the config file
+  2. Generate CHANGELOG if `@semantic-release/release-notes-generator` is found in the config file
+  3. Bump the version in all the files defined in your `semantic-release-replace-plugin` settings in the config file
+  4. Create a new branch called `release-please--branches--[your branch specified in the config file]
+  5. Commit the changed files to the new branch
+  6. Push the new branch
+- The idea is that you can then use your Git service API to create a release PR from that release branch.
 **semantic-release** automates the whole package release workflow including: determining the next version number, generating the release notes, and publishing the package.
 
 This removes the immediate connection between human emotions and version numbers, strictly following the [Semantic Versioning](http://semver.org) specification and communicating the **impact** of changes to consumers.
 
-> Trust us, this will change your workflow for the better. – [egghead.io](https://egghead.io/lessons/javascript-how-to-write-a-javascript-library-automating-releases-with-semantic-release)
+# Releasing New Versions of Contiamno Semantic release
+
+1. make your code changes
+2. Bump the version in `package.json`
+3. Run `npm login`
+4. Run `npm publish`
+
 
 ## Highlights
 

@@ -160,6 +160,14 @@ Set to `false` to skip Continuous Integration environment verifications. This al
 
 **Note**: The CLI arguments `--no-ci` is equivalent to `--ci false`.
 
+### skip-git-push
+
+Type: `Boolean`<br>
+Default: `false`<br>
+CLI arguments: `--skip-git-push`
+
+Set to `true` to skip pushing Git tags to the remote repository.
+
 ### debug
 
 Type: `Boolean`<br>

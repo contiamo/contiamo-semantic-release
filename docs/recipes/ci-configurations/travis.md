@@ -38,7 +38,7 @@ jobs:
         provider: script
         skip_cleanup: true
         script:
-          - npx semantic-release
+          - npx contiamo-semantic-release
 ```
 
 ### `package.json` configuration for multiple Node jobs
@@ -48,7 +48,7 @@ A `package.json` is required only for [local](../../usage/installation.md#local-
 ```json
 {
   "devDependencies": {
-    "semantic-release": "^18.0.0"
+    "contiamo-semantic-release": "^1.0.0"
   }
 }
 ```
@@ -91,7 +91,7 @@ jobs:
         script:
           # Use nvm to install and use the Node LTS version (nvm is installed on all Travis images)
           - nvm install lts/*
-          - npx semantic-release
+          - npx contiamo-semantic-release
         on:
           all_branches: true
 ```
