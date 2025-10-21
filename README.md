@@ -1,4 +1,6 @@
-# :warning: Deprecated. Use https://github.com/contiamo/contiamo-release-please instead :warning: 
+# :warning: Deprecated. :warning:
+
+## :warning: Use https://github.com/contiamo/contiamo-release-please instead :warning: 
 
 
 
