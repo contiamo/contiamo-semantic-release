@@ -1,3 +1,7 @@
+# :warning: Deprecated. Use https://github.com/contiamo/contiamo-release-please instead :warning: 
+
+
+
 <h1 align="center" style="border-bottom: none;">📦🚀 semantic-release</h1>
 <h3 align="center">Fully automated version management and package publishing</h3>
 <p align="center">
